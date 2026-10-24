@@ -50,14 +50,15 @@ if [ "$action" = "repair" ]; then
     mkdir -p "$output/service"
     bash "$START_TOOL" "$NEW_CONF" "$output/service" || true
 
-    for i in {1..10}; do
-        if curl -s -o "$output/http-body.txt" -w "%{http_code}" "http://127.0.0.1:$TARGET_PORT/status" > "$output/http-status.txt" 2>/dev/null; then
-            if [ "$(cat "$output/http-status.txt")" = "200" ]; then
-                break
-            fi
-        fi
-        sleep 0.5
-    done
+     # 7. 测试 HTTP
+ for i in {1..10}; do
+     HTTP_CODE=$(curl -s -o "$output/http-body.txt" -w "%{http_code}" "http://127.0.0.1:$TARGET_PORT/status" 2>/dev/null || true)
+     if [ "$HTTP_CODE" = "200" ]; then
+         echo "$HTTP_CODE" > "$output/http-status.txt"
+         break
+     fi
+     sleep 0.5
+ done
 
 elif [ "$action" = "cleanup" ]; then
     if [ -f "$output/service/pid" ]; then

@@ -10,24 +10,29 @@ output=${2:?需要输出目录}
 set -eu
 input=${1:?需要输入目录}
 output=${2:?需要输出目录}
-
 WS_DIR="$output/sentry_ws"
 
-mkdir -p "$WS_DIR/scripts" "$WS_DIR/config" "$WS_DIR/backup" "$WS_DIR/archive"
+# 1. 创建四个目录
+mkdir -p "$WS_DIR/scripts"
+mkdir -p "$WS_DIR/config"
+mkdir -p "$WS_DIR/logs"
+mkdir -p "$WS_DIR/tmp"
 
-cp "$input/hello.sh" "$WS_DIR/scripts/hello.sh"
-cp "$input/robot.conf" "$WS_DIR/config/robot.conf"
-cp "$input/draft.conf" "$WS_DIR/config/draft.conf"
+# 2. 创建两个空文件
+touch "$WS_DIR/logs/.keep"
+touch "$WS_DIR/scratch.txt"
 
-cp "$WS_DIR/config/robot.conf" "$WS_DIR/backup/robot.conf"
+# 3. 纯手写生成 hello.sh (不要用 cp)
+cat > "$WS_DIR/scripts/hello.sh" << 'EOF'
+#!/bin/bash
+echo "Hello, AIM Linux!"
+EOF
 
-mv "$WS_DIR/config/draft.conf" "$WS_DIR/archive/draft.conf.old"
-
-rm -rf "$WS_DIR/tmp"
-
-chmod 750 "$WS_DIR/scripts/hello.sh"
-chmod 640 "$WS_DIR/config/robot.conf"
-
-bash "$WS_DIR/scripts/hello.sh" > "$output/hello-output.txt"
+# 4. 纯手写生成 robot.conf (不要用 cp)
+cat > "$WS_DIR/config/robot.conf" << 'EOF'
+robot=sentry
+mode=training
+log_level=INFO
+EOF
 
 exit 0

@@ -5,6 +5,34 @@ set -eu
 input=${1:?需要输入目录}
 output=${2:?需要输出目录}
 
-# TODO：删除下方提示和 exit 77，再填写你的命令。
-printf '%s\n' 'Q7 尚未实现' >&2
-exit 77
+#!/bin/bash
+set -eu
+input=${1:?需要输入目录}
+output=${2:?需要输出目录}
+
+# 读取环境变量
+source "$input/remote.env"
+
+# 1. 生成 ssh_config 文件 (权限 600)
+CONFIG_FILE="$output/ssh_config"
+cat > "$CONFIG_FILE" << EOF
+Host aim-sentry
+    HostName $HOST
+    Port $PORT
+    User $REMOTE_USER
+    IdentityFile "$KEY_PATH"
+    UserKnownHostsFile "$KNOWN_HOSTS"
+    IdentitiesOnly yes
+    StrictHostKeyChecking yes
+    BatchMode yes
+EOF
+chmod 600 "$CONFIG_FILE"
+
+# 2. 通过 SSH 执行 whoami，保存结果
+ssh -F "$CONFIG_FILE" aim-sentry whoami > "$output/remote-user.txt"
+
+# 3. 使用 SCP 下载远端日志
+mkdir -p "$output/received"
+scp -F "$CONFIG_FILE" "aim-sentry:$REMOTE_LOG" "$output/received/errors.log"
+
+exit 0

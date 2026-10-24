@@ -5,6 +5,28 @@ set -eu
 input=${1:?需要输入目录}
 output=${2:?需要输出目录}
 
-# TODO：删除下方提示和 exit 77，再填写你的命令。
-printf '%s\n' 'Q3 尚未实现' >&2
-exit 77
+#!/bin/bash
+set -eu
+input=${1:?需要输入目录}
+output=${2:?需要输出目录}
+
+WS_DIR="$output/sentry_ws"
+
+mkdir -p "$WS_DIR/scripts" "$WS_DIR/config" "$WS_DIR/backup" "$WS_DIR/archive"
+
+cp "$input/hello.sh" "$WS_DIR/scripts/hello.sh"
+cp "$input/robot.conf" "$WS_DIR/config/robot.conf"
+cp "$input/draft.conf" "$WS_DIR/config/draft.conf"
+
+cp "$WS_DIR/config/robot.conf" "$WS_DIR/backup/robot.conf"
+
+mv "$WS_DIR/config/draft.conf" "$WS_DIR/archive/draft.conf.old"
+
+rm -rf "$WS_DIR/tmp"
+
+chmod 750 "$WS_DIR/scripts/hello.sh"
+chmod 640 "$WS_DIR/config/robot.conf"
+
+bash "$WS_DIR/scripts/hello.sh" > "$output/hello-output.txt"
+
+exit 0
